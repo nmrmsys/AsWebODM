@@ -75,7 +75,12 @@
             if(!qty){
               qty = 1;
             }
-            viewModel.detail.push({barcode: barcode, qty: qty});
+            var hitRow = ko.utils.arrayFirst(viewModel.detail(), function(row){ return row.barcode() === barcode});
+            if(hitRow){
+              hitRow.qty(hitRow.qty() + qty);
+            } else {
+              viewModel.detail.push(ko.mapping.fromJS({barcode: barcode, qty: qty}));
+            }
             detail_save();
             viewModel.barcode('');
             viewModel.qty('');
