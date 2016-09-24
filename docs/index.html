@@ -102,13 +102,13 @@
           data: ko.mapping.toJSON(viewModel),
           success: function(data){
             alert("Data Sending Success!\n\n" + data);
+            viewModel.detail.removeAll();
+            detail_save();
           },
           error: function(data){
             Materialize.toast('Data Sending Error!', 2000)
           }
         });
-        viewModel.detail.removeAll();
-        detail_save();
       }
 
       // データクリア
