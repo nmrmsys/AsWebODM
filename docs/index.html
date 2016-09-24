@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="msapplication-tap-highlight" content="no">
+    <title>AsWeb Offline Data Manager</title>
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css"  media="screen,projection"/>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js"></script>
+    <style type="text/css">
+    <!--
+      body {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+      main {
+        flex: 1 0 auto;
+      }
+    -->
+    </style>
+    <script>
+      // ビューモデル初期値
+      var initData = {
+        setting: {
+          term_id: '00000',
+          user_cd: '00000',
+          location_cd: '00000',
+          input_cd: '00000',
+          send_url: ''
+        },
+        detail: [{barcode: '', qty: ''}],
+        barcode: '',
+        qty: ''
+      };
+
+      var viewModel;
+
+      // ページロード時
+      $(function(){
+        // ビューモデル生成、データバインディング
+        viewModel = ko.mapping.fromJS(initData);
+        viewModel.detail.removeAll();
+        ko.applyBindings(viewModel);
+
+        // ローカルストレージ読出、ビューモデルへセット
+        var settingJSON = localStorage.getItem("setting");
+        if(settingJSON){
+          ko.mapping.fromJSON(settingJSON, {}, viewModel.setting);
+        }
+        var detailJSON = localStorage.getItem("detail");
+        if(detailJSON){
+          ko.mapping.fromJSON(detailJSON, {}, viewModel.detail);
+        }
+
+        // サイドメニュー、モーダル画面セットアップ
+        $('.button-collapse').sideNav({closeOnClick: true});
+        $('.modal-trigger').leanModal();
+        
+        // 最初の表示入力項目へフォーカス
+        $('input:visible').first().focus();
+      });
+      
+      // バーコード項目 キー入力時
+      function barcode_keypress(data,e){
+        if(e.keyCode == 13) {
+          var barcode = viewModel.barcode();
+          var qty = viewModel.qty();
+          if(barcode){
+            if(!qty){
+              qty = 1;
+            }
+            viewModel.detail.push({barcode: barcode, qty: qty});
+            detail_save();
+            viewModel.barcode('');
+            viewModel.qty('');
+          }
+        }
+        return true;
+      }
+      
+      // 追加ボタン押下時
+      function add_btn_click(){
+        barcode_keypress({}, {keyCode: 13});
+      }
+      
+      // データ送信
+      function data_send(){
+        $.ajax({
+          url: viewModel.setting.send_url(),
+          type:'POST',
+          data: ko.mapping.toJSON(viewModel),
+          success: function(data){
+            alert("Data Sending Success!\n\n" + data);
+          },
+          error: function(data){
+            Materialize.toast('Data Sending Error!', 2000)
+          }
+        });
+        viewModel.detail.removeAll();
+        detail_save();
+      }
+
+      // データクリア
+      function data_clear(){
+        viewModel.detail.removeAll();
+        detail_save();
+        Materialize.toast('Data Cleared!', 2000)
+      }
+
+      // 設定保存
+      function config_save(){
+        var settingJSON = ko.mapping.toJSON(viewModel.setting);
+        localStorage.setItem("setting", settingJSON);
+      }
+
+      // 明細保存
+      function detail_save(){
+        var detailJSON = ko.mapping.toJSON(viewModel.detail);
+        localStorage.setItem("detail", detailJSON);
+      }
+    </script>
+  </head>
+  <body>
+
+    <!-- メイン画面定義 -->
+    <header>
+      <div class="navbar-fixed">
+        <nav>
+          <div class="nav-wrapper red accent-4 white-text">
+            <a href="#" class="brand-logo center">AsWebODM</a>
+            <a href="#" data-activates="mobile-menu" class="button-collapse"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+              <li><a href="#" data-bind="click: data_send">データ送信</a></li>
+              <li><a href="#" data-bind="click: data_clear">データクリア</a></li>
+              <li><a href="#config" class="modal-trigger">設定</a></li>
+              <li><a href="#about" class="modal-trigger">AsWebODMについて</a></li>
+            </ul>
+            <ul class="side-nav" id="mobile-menu">
+              <li><a href="#" data-bind="click: data_send">データ送信</a></li>
+              <li><a href="#" data-bind="click: data_clear">データクリア</a></li>
+              <li><a href="#config" class="modal-trigger">設定</a></li>
+              <li><a href="#about" class="modal-trigger">AsWebODMについて</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <table id="detail" class="striped">
+        <thead>
+          <tr><th>Barcode</th><th>Qty</th></tr>
+        </thead>
+        <tbody data-bind="foreach:detail">
+          <tr><td data-bind="text:$data.barcode">1234567890123</td><td data-bind="text:$data.qty">123</td></tr>
+        </tbody>
+      </table>
+
+    </main>
+    <footer class="page-footer red accent-4 white-text">
+      <div class="container">
+        <div class="row">
+          <input type="number" maxlength="13" class="col s6" placeholder="Barcode" maxlength="13" data-bind="value:barcode, valueUpdate:'afterkeydown', event: {keypress: barcode_keypress}">
+          <span class="col s1">&nbsp;</span>
+          <input type="number" maxlength="3" class="col s2" placeholder="Qty" maxlength="3" data-bind="value:qty, valueUpdate:'afterkeydown'">
+          <span class="col s1">&nbsp;</span>
+          <a class="waves-effect waves-light btn col s2 red darken-2" data-bind="click: add_btn_click"><i class="material-icons" >input</i></a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- モーダル画面定義：バージョン表示 -->
+    <div id="about" class="modal">
+      <div class="modal-content">
+        <h5 class="center-align">AsWeb Offline Data Manager</h5>
+        <h5 class="center-align">version 0.1.0</h5>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class=" modal-action modal-close waves-effect waves-green btn-flat">OK</a>
+      </div>
+    </div>
+
+    <!-- モーダル画面定義：設定画面 -->
+    <div id="config" class="modal">
+      <div class="modal-content">
+        <h5>AsWeb ODM 設定</h5>
+        <div class="row">
+          <div class="input-field col s6">
+            <input id="term_id" type="number" maxlength="5" data-bind="value:setting.term_id">
+            <label for="term_id">接続端末ID</label>
+          </div>
+          <div class="input-field col s6">
+            <input id="user_cd" type="number" maxlength="5" data-bind="value:setting.user_cd">
+            <label for="user_cd">使用者コード</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s6">
+            <input id="location_cd" type="number" maxlength="5" data-bind="value:setting.location_cd">
+            <label for="location_cd">場所コード</label>
+          </div>
+          <div class="input-field col s6">
+            <input id="input_cd" type="number" maxlength="5" data-bind="value:setting.input_cd">
+            <label for="input_cd">入力コード</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="send_url" type="url" style="font-size:8px;" data-bind="value:setting.send_url">
+            <label for="send_url">データ送信先URL</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class=" modal-action modal-close waves-effect waves-green btn-flat" data-bind="click: config_save">保存</a>
+        <a href="#" class=" modal-action modal-close waves-effect waves-green btn-flat">キャンセル</a>
+      </div>
+    </div>
+
+  </body>
+</html>
