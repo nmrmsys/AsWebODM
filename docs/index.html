@@ -164,9 +164,9 @@
     <footer class="page-footer red accent-4 white-text">
       <div class="container">
         <div class="row">
-          <input type="number" maxlength="13" class="col s6" placeholder="Barcode" maxlength="13" data-bind="value:barcode, valueUpdate:'afterkeydown', event: {keypress: barcode_keypress}">
+          <input type="number" maxlength="13" class="col s6" placeholder="Barcode" maxlength="13" data-bind="value:barcode, valueUpdate:'keypress', event: {keypress: barcode_keypress}">
           <span class="col s1">&nbsp;</span>
-          <input type="number" maxlength="3" class="col s2" placeholder="Qty" maxlength="3" data-bind="value:qty, valueUpdate:'afterkeydown'">
+          <input type="number" maxlength="3" class="col s2" placeholder="Qty" maxlength="3" data-bind="value:qty, valueUpdate:'keypress'">
           <span class="col s1">&nbsp;</span>
           <a class="waves-effect waves-light btn col s2 red darken-2" data-bind="click: add_btn_click"><i class="material-icons" >input</i></a>
         </div>
