@@ -39,7 +39,9 @@
         qty: ''
       };
 
+      // グローバル変数定義
       var viewModel;
+      var barcodeInput;
 
       // ページロード時
       $(function(){
@@ -63,7 +65,8 @@
         $('.modal-trigger').leanModal();
         
         // 最初の表示入力項目へフォーカス
-        $('input:visible').first().focus();
+        barcodeInput = $('input:visible').first();
+        barcodeInput_focus(); 
       });
       
       // バーコード項目 キー入力時
@@ -77,7 +80,7 @@
             }
             var hitRow = ko.utils.arrayFirst(viewModel.detail(), function(row){ return row.barcode() === barcode});
             if(hitRow){
-              hitRow.qty(hitRow.qty() + qty);
+              hitRow.qty(parseInt(hitRow.qty()) + parseInt(qty));
             } else {
               viewModel.detail.push(ko.mapping.fromJS({barcode: barcode, qty: qty}));
             }
@@ -85,6 +88,7 @@
             viewModel.barcode('');
             viewModel.qty('');
           }
+          barcodeInput_focus();
         }
         return true;
       }
@@ -94,7 +98,7 @@
         barcode_keypress({}, {keyCode: 13});
       }
       
-      // データ送信
+      // データ送信時
       function data_send(){
         $.ajax({
           url: viewModel.setting.send_url(),
@@ -104,24 +108,33 @@
             alert("Data Sending Success!\n\n" + data);
             viewModel.detail.removeAll();
             detail_save();
+            barcodeInput_focus();
           },
           error: function(data){
-            Materialize.toast('Data Sending Error!', 2000)
+            Materialize.toast('Data Sending Error!', 2000);
+            barcodeInput_focus();
           }
         });
       }
 
-      // データクリア
+      // データクリア時
       function data_clear(){
         viewModel.detail.removeAll();
         detail_save();
-        Materialize.toast('Data Cleared!', 2000)
+        Materialize.toast('Data Cleared!', 2000);
+        barcodeInput_focus();
       }
 
-      // 設定保存
+      // 設定保存時
       function config_save(){
         var settingJSON = ko.mapping.toJSON(viewModel.setting);
         localStorage.setItem("setting", settingJSON);
+        barcodeInput_focus();
+      }
+
+      // モーダル画面クローズ時
+      function modal_close(){
+        barcodeInput_focus();
       }
 
       // 明細保存
@@ -129,6 +142,14 @@
         var detailJSON = ko.mapping.toJSON(viewModel.detail);
         localStorage.setItem("detail", detailJSON);
       }
+
+      // バーコード入力項目へフォーカス
+      function barcodeInput_focus(){
+        // iOSでキーボードが出るのを抑制する為の readonly属性付与
+        barcodeInput.attr('readonly', '');
+        barcodeInput.focus();
+        barcodeInput.removeAttr('readonly');
+      } 
     </script>
   </head>
   <body>
@@ -169,9 +190,9 @@
     <footer class="page-footer red accent-4 white-text">
       <div class="container">
         <div class="row">
-          <input type="number" maxlength="13" class="col s6" placeholder="Barcode" maxlength="13" data-bind="value:barcode, valueUpdate:'keypress', event: {keypress: barcode_keypress}">
+          <input type="text" pattern="\d*" maxlength="13" class="col s6" placeholder="Barcode" maxlength="13" data-bind="value:barcode, valueUpdate:'keypress', event: {keypress: barcode_keypress}">
           <span class="col s1">&nbsp;</span>
-          <input type="number" maxlength="3" class="col s2" placeholder="Qty" maxlength="3" data-bind="value:qty, valueUpdate:'keypress'">
+          <input type="text" pattern="\d*" maxlength="3" class="col s2" placeholder="Qty" maxlength="3" data-bind="value:qty, valueUpdate:'keypress'">
           <span class="col s1">&nbsp;</span>
           <a class="waves-effect waves-light btn col s2 red darken-2" data-bind="click: add_btn_click"><i class="material-icons" >input</i></a>
         </div>
@@ -182,11 +203,11 @@
     <div id="about" class="modal">
       <div class="modal-content">
         <h5 class="center-align">AsWeb Offline Data Manager</h5>
-        <h5 class="center-align">version 0.1.0</h5>
+        <h5 class="center-align">version 0.1.2</h5>
         <div class="center-align" style="font-size:11px;"><a href="https://github.com/nmrmsys/AsWebODM/">https://github.com/nmrmsys/AsWebODM/</a></div>
       </div>
       <div class="modal-footer">
-        <a href="#" class=" modal-action modal-close waves-effect waves-green btn-flat">OK</a>
+        <a href="#" class=" modal-action modal-close waves-effect waves-green btn-flat" data-bind="click: modal_close">OK</a>
       </div>
     </div>
 
@@ -196,21 +217,21 @@
         <h5>AsWeb ODM 設定</h5>
         <div class="row">
           <div class="input-field col s6">
-            <input id="term_id" type="number" maxlength="5" data-bind="value:setting.term_id">
+            <input id="term_id" type="text" pattern="\d*" maxlength="5" data-bind="value:setting.term_id">
             <label for="term_id">接続端末ID</label>
           </div>
           <div class="input-field col s6">
-            <input id="user_cd" type="number" maxlength="5" data-bind="value:setting.user_cd">
+            <input id="user_cd" type="text" pattern="\d*" maxlength="5" data-bind="value:setting.user_cd">
             <label for="user_cd">使用者コード</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s6">
-            <input id="location_cd" type="number" maxlength="5" data-bind="value:setting.location_cd">
+            <input id="location_cd" type="text" pattern="\d*" maxlength="5" data-bind="value:setting.location_cd">
             <label for="location_cd">場所コード</label>
           </div>
           <div class="input-field col s6">
-            <input id="input_cd" type="number" maxlength="5" data-bind="value:setting.input_cd">
+            <input id="input_cd" type="text" pattern="\d*" maxlength="5" data-bind="value:setting.input_cd">
             <label for="input_cd">入力コード</label>
           </div>
         </div>
@@ -223,7 +244,7 @@
       </div>
       <div class="modal-footer">
         <a href="#" class=" modal-action modal-close waves-effect waves-green btn-flat" data-bind="click: config_save">保存</a>
-        <a href="#" class=" modal-action modal-close waves-effect waves-green btn-flat">キャンセル</a>
+        <a href="#" class=" modal-action modal-close waves-effect waves-green btn-flat" data-bind="click: modal_close">キャンセル</a>
       </div>
     </div>
 
