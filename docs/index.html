@@ -103,6 +103,7 @@
         $.ajax({
           url: viewModel.setting.send_url(),
           type:'POST',
+          contentType:'application/json',
           data: ko.mapping.toJSON(viewModel),
           success: function(data){
             alert("Data Sending Success!\n\n" + data);
@@ -119,6 +120,9 @@
 
       // データクリア時
       function data_clear(){
+        if(!window.confirm('本当にデータクリアしますか？')){
+          return false;
+        }
         viewModel.detail.removeAll();
         detail_save();
         Materialize.toast('Data Cleared!', 2000);
@@ -203,7 +207,7 @@
     <div id="about" class="modal">
       <div class="modal-content">
         <h5 class="center-align">AsWeb Offline Data Manager</h5>
-        <h5 class="center-align">version 0.1.2</h5>
+        <h5 class="center-align">version 0.1.4</h5>
         <div class="center-align" style="font-size:11px;"><a href="https://github.com/nmrmsys/AsWebODM/">https://github.com/nmrmsys/AsWebODM/</a></div>
       </div>
       <div class="modal-footer">
