@@ -35,8 +35,8 @@
           send_url: ''
         },
         detail: [{barcode: '', qty: ''}],
-        barcode: '',
-        qty: ''
+        barcode_input: '',
+        qty_input: ''
       };
 
       // グローバル変数定義
@@ -72,8 +72,8 @@
       // バーコード項目 キー入力時
       function barcode_keypress(data,e){
         if(e.keyCode == 13) {
-          var barcode = viewModel.barcode();
-          var qty = viewModel.qty();
+          var barcode = viewModel.barcode_input();
+          var qty = viewModel.qty_input();
           if(barcode){
             if(!qty){
               qty = 1;
@@ -85,8 +85,8 @@
               viewModel.detail.push(ko.mapping.fromJS({barcode: barcode, qty: qty}));
             }
             detail_save();
-            viewModel.barcode('');
-            viewModel.qty('');
+            viewModel.barcode_input('');
+            viewModel.qty_input('');
           }
           barcodeInput_focus();
         }
@@ -194,9 +194,9 @@
     <footer class="page-footer red accent-4 white-text">
       <div class="container">
         <div class="row">
-          <input type="text" pattern="\d*" maxlength="13" class="col s6" placeholder="Barcode" maxlength="13" data-bind="value:barcode, valueUpdate:'keypress', event: {keypress: barcode_keypress}">
+          <input type="text" pattern="\d*" maxlength="13" class="col s6" placeholder="Barcode" maxlength="13" data-bind="value:barcode_input, valueUpdate:'keypress', event: {keypress: barcode_keypress}">
           <span class="col s1">&nbsp;</span>
-          <input type="text" pattern="\d*" maxlength="3" class="col s2" placeholder="Qty" maxlength="3" data-bind="value:qty, valueUpdate:'keypress'">
+          <input type="text" pattern="\d*" maxlength="3" class="col s2" placeholder="Qty" maxlength="3" data-bind="value:qty_input, valueUpdate:'keypress'">
           <span class="col s1">&nbsp;</span>
           <a class="waves-effect waves-light btn col s2 red darken-2" data-bind="click: add_btn_click"><i class="material-icons" >input</i></a>
         </div>
@@ -207,7 +207,7 @@
     <div id="about" class="modal">
       <div class="modal-content">
         <h5 class="center-align">AsWeb Offline Data Manager</h5>
-        <h5 class="center-align">version 0.1.4</h5>
+        <h5 class="center-align">version 0.1.5</h5>
         <div class="center-align" style="font-size:11px;"><a href="https://github.com/nmrmsys/AsWebODM/">https://github.com/nmrmsys/AsWebODM/</a></div>
       </div>
       <div class="modal-footer">
